@@ -1,9 +1,10 @@
 use actix_files::Files;
+use actix_web::web::get;
 use actix_web::{
-    get,
-    web,
-    middleware::Logger,
     dev::{Service, ServiceResponse},
+    get,
+    middleware::Logger,
+    web,
     web::{resource, route, scope, Data, Query},
     App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
@@ -60,8 +61,7 @@ impl Shelf {
 
 #[get("/")]
 async fn index() -> impl Responder {
-    let content = fs::read_to_string("./templates/index.html").unwrap();
-    HttpResponse::Ok().body(content)
+    HttpResponse::Ok().body(include_str!("../templates/index.html"))
 }
 
 #[get("/admin")]
@@ -77,7 +77,6 @@ async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder
     }
 }
 
-
 #[get("/no-rights")]
 async fn no_rights() -> impl Responder {
     HttpResponse::Unauthorized().body("no rights")
@@ -85,7 +84,7 @@ async fn no_rights() -> impl Responder {
 
 async fn http(req: HttpRequest) -> impl Responder {
     info!("HTTP version: {:?}", req.version());
-    HttpResponse::Ok().finish()
+    HttpResponse::Ok().append_header(("Location", "/")).finish()
 }
 
 async fn settings() -> String {
@@ -106,10 +105,8 @@ async fn submit(data: web::Json<User>) -> impl Responder {
     format!("Hello, {}!", data.name)
 }
 
-
 async fn admin_panel() -> impl Responder {
-    let content = fs::read_to_string("./templates/admin-panel.html").unwrap();
-    HttpResponse::Ok().body(content)
+    HttpResponse::Ok().body(include_str!("../templates/admin-panel.html"))
 }
 
 async fn get_html(data: web::Form<User>) -> impl Responder {
@@ -121,8 +118,7 @@ async fn test_page() -> impl Responder {
 }
 
 async fn handle_404() -> impl Responder {
-    let content = fs::read_to_string("./templates/not_found.html").unwrap();
-    HttpResponse::NotFound().body(content)
+    HttpResponse::NotFound().body(include_str!("../templates/not_found.html"))
 }
 
 #[actix_web::main]
