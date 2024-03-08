@@ -43,13 +43,11 @@ impl Shelf {
     }
 
     fn list(data: &Mutex<Shelf>) -> Vec<Book> {
-        info!("Shelf list printed");
         let shelf = data.lock().unwrap();
         shelf.contain.clone()
     }
 
     fn add(data: &Mutex<Shelf>) {
-        info!("Book added");
         let mut shelf = data.lock().unwrap();
         let id = shelf.contain.len();
         shelf.contain.push(Book {
@@ -69,9 +67,7 @@ async fn index() -> impl Responder {
 #[get("/admin")]
 async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder {
     *rights.admin.lock().unwrap() = true;
-    info!("rights = true");
     if format!("{}", admin.login) == "login" && format!("{}", admin.password) == "1111" {
-        info!("red");
         HttpResponse::Found()
             .append_header(("Location", "/admin-panel"))
             .finish()
@@ -79,6 +75,12 @@ async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder
         error!("Incorrect login attempt");
         HttpResponse::Unauthorized().body("Incorrect login or password")
     }
+}
+
+
+#[get("/no-rights")]
+async fn no_rights() -> impl Responder {
+    HttpResponse::Unauthorized().body("no rights")
 }
 
 async fn http(req: HttpRequest) -> impl Responder {
@@ -104,15 +106,10 @@ async fn submit(data: web::Json<User>) -> impl Responder {
     format!("Hello, {}!", data.name)
 }
 
-#[get("/no-rights")]
-async fn no_rights() -> impl Responder {
-    info!("please login");
-    HttpResponse::Unauthorized().body("no rights")
-}
 
 async fn admin_panel() -> impl Responder {
-    info!("Visited admin panel");
-    HttpResponse::Ok().body("Admin panel content")
+    let content = fs::read_to_string("./templates/admin-panel.html").unwrap();
+    HttpResponse::Ok().body(content)
 }
 
 async fn get_html(data: web::Form<User>) -> impl Responder {
@@ -124,7 +121,8 @@ async fn test_page() -> impl Responder {
 }
 
 async fn handle_404() -> impl Responder {
-    HttpResponse::NotFound().body(" <style> body { background-color: black } h1 { color: white } </style> <h1> Not Found </h1>")
+    let content = fs::read_to_string("./templates/not_found.html").unwrap();
+    HttpResponse::NotFound().body(content)
 }
 
 #[actix_web::main]
@@ -194,11 +192,11 @@ async fn main() -> Result<()> {
                         }),
                     ),
             )
-            .default_service(route().to(handle_404))
             .route("/http", web::get().to(http))
             .route("/submit", web::post().to(submit))
             .route("/html", web::post().to(get_html))
             .route("/test_page", web::get().to(test_page))
+            .default_service(route().to(handle_404))
     })
     .shutdown_timeout(10)
     .bind(("127.0.0.1", 8080))?
