@@ -1,18 +1,20 @@
-use actix_web::{get, Error, guard::Host, dev::ServiceRequest, dev::Service, http, middleware::Logger, post, web, web::{resource, route, scope, Data, Query}, App, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError, Either};
-use log::{debug, error, info, warn};
+use actix_files::Files;
+use actix_web::{
+    get,
+    web,
+    middleware::Logger,
+    dev::{Service, ServiceResponse},
+    web::{resource, route, scope, Data, Query},
+    App, HttpRequest, HttpResponse, HttpServer, Responder,
+};
+use futures::FutureExt;
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 use std::{
     env, fs,
     io::Result,
     sync::{Arc, Mutex},
 };
-use futures::future::ready;
-use std::panic::Location;
-use futures_util::future::{BoxFuture, FutureExt};
-use std::time::Duration;
-use actix_web::dev::ServiceResponse;
-use actix_web::http::header::LOCATION;
-use actix_web::web::{get, redirect, Redirect};
 
 #[derive(Serialize, Clone, Debug)]
 struct Book {
@@ -64,24 +66,20 @@ async fn index() -> impl Responder {
     HttpResponse::Ok().body(content)
 }
 
-
-
 #[get("/admin")]
 async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder {
     *rights.admin.lock().unwrap() = true;
     info!("rights = true");
     if format!("{}", admin.login) == "login" && format!("{}", admin.password) == "1111" {
         info!("red");
-        HttpResponse::Found().append_header(("Location", "/admin-panel")).finish()
+        HttpResponse::Found()
+            .append_header(("Location", "/admin-panel"))
+            .finish()
     } else {
         error!("Incorrect login attempt");
         HttpResponse::Unauthorized().body("Incorrect login or password")
     }
 }
-
-
-
-
 
 async fn http(req: HttpRequest) -> impl Responder {
     info!("HTTP version: {:?}", req.version());
@@ -99,15 +97,12 @@ struct User {
 }
 
 struct Rights {
-    admin: Arc<Mutex<bool>>
+    admin: Arc<Mutex<bool>>,
 }
 
 async fn submit(data: web::Json<User>) -> impl Responder {
     format!("Hello, {}!", data.name)
 }
-
-
-
 
 #[get("/no-rights")]
 async fn no_rights() -> impl Responder {
@@ -115,15 +110,10 @@ async fn no_rights() -> impl Responder {
     HttpResponse::Unauthorized().body("no rights")
 }
 
-
-
-
 async fn admin_panel() -> impl Responder {
     info!("Visited admin panel");
     HttpResponse::Ok().body("Admin panel content")
 }
-
-
 
 async fn get_html(data: web::Form<User>) -> impl Responder {
     HttpResponse::Ok().body(format!("Submitted username: {}", data.name))
@@ -143,7 +133,9 @@ async fn main() -> Result<()> {
     env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
     let shelf = Arc::new(Mutex::new(Shelf::new()));
-    let rights = Arc::new(Rights { admin: Arc::new(Mutex::new(false)) });
+    let rights = Arc::new(Rights {
+        admin: Arc::new(Mutex::new(false)),
+    });
 
     HttpServer::new(move || {
         let logger = Logger::default();
@@ -171,6 +163,7 @@ async fn main() -> Result<()> {
                     })
                     .service(resource("").to(admin_panel))
                     .service(resource("/settings").to(settings))
+                    .service(Files::new("/dir", "./").show_files_listing()),
             )
             .service(
                 scope("/shelf")
