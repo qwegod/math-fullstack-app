@@ -212,10 +212,8 @@ dependencies = [
  "actix-web",
  "env_logger",
  "futures",
- "futures-util",
  "log",
  "serde",
- "tokio",
 ]
 
 [[package]]
