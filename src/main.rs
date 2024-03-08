@@ -1,4 +1,4 @@
-use actix_web::{get, guard::Host, http, middleware::Logger, post, web, web::{resource, route, scope, Data, Query}, App, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError, Either};
+use actix_web::{get, Error, guard::Host, dev::ServiceRequest, dev::Service, http, middleware::Logger, post, web, web::{resource, route, scope, Data, Query}, App, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError, Either};
 use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -6,8 +6,11 @@ use std::{
     io::Result,
     sync::{Arc, Mutex},
 };
+use futures::future::ready;
 use std::panic::Location;
+use futures_util::future::{BoxFuture, FutureExt};
 use std::time::Duration;
+use actix_web::dev::ServiceResponse;
 use actix_web::http::header::LOCATION;
 use actix_web::web::{get, redirect, Redirect};
 
@@ -57,7 +60,7 @@ impl Shelf {
 
 #[get("/")]
 async fn index() -> impl Responder {
-    let content = fs::read_to_string("index.html").unwrap();
+    let content = fs::read_to_string("./templates/index.html").unwrap();
     HttpResponse::Ok().body(content)
 }
 
@@ -75,6 +78,7 @@ async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder
         HttpResponse::Unauthorized().body("Incorrect login or password")
     }
 }
+
 
 
 
@@ -114,22 +118,10 @@ async fn no_rights() -> impl Responder {
 
 
 
-#[get("/admin-panel")]
-async fn admin_panel(rights: Data<Arc<Rights>>) -> Either<impl Responder, impl Responder> {
-    let admin_lock = rights.admin.lock().unwrap();
-    if *admin_lock {
-        info!("r");
-        info!("Visited admin panel");
-        Either::Left(HttpResponse::Ok().body("Admin panel content"))
-    } else {
-        info!("no r");
-        info!("redirect");
-        Either::Right(HttpResponse::Found()
-            .append_header(("Location", "/no-rights"))
-            .finish())
-    }
+async fn admin_panel() -> impl Responder {
+    info!("Visited admin panel");
+    HttpResponse::Ok().body("Admin panel content")
 }
-
 
 
 
@@ -159,12 +151,27 @@ async fn main() -> Result<()> {
         let rights_clone = Arc::clone(&rights);
         App::new()
             .wrap(logger)
-            .service(index)
+            .app_data(Data::new(rights_clone.clone()))
             .service(admin)
+            .service(index)
             .service(no_rights)
-            .app_data(Data::new(rights_clone))
-            .service(scope("/admin").route("/settings", web::get().to(settings)))
-            .service(admin_panel)
+            .service(
+                scope("/admin-panel")
+                    .wrap_fn(move |req, srv| {
+                        if *rights_clone.admin.lock().unwrap() {
+                            srv.call(req)
+                        } else {
+                            let res = HttpResponse::Found()
+                                .append_header(("Location", "/no-rights"))
+                                .finish();
+                            let (parts, _) = req.into_parts();
+                            let service_response = ServiceResponse::new(parts, res);
+                            async { Ok(service_response) }.boxed_local()
+                        }
+                    })
+                    .service(resource("").to(admin_panel))
+                    .service(resource("/settings").to(settings))
+            )
             .service(
                 scope("/shelf")
                     .route(
