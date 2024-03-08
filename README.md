@@ -22,7 +22,7 @@ This project is created to demonstrate my skills in building web servers using A
 - Know languages such as Rust, C, C++, C#, Python
 - Have experience with Git/Github
 - I know how to work with these crates: tokio, actix_web, actix_files, env_logger, log, crossterm, rand, chrono, serde
-- Language proficiency: Ukraine, Russian, English (b1)
+- Language proficiency: Ukraine, Russian, English (B1)
 
 ## Contact
 bloodypp0296@gmail.com
