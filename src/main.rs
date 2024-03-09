@@ -1,15 +1,8 @@
 mod task;
 
 use actix_files::Files;
-use actix_web::web::{Json, Path};
-use actix_web::{
-    dev::{Service, ServiceResponse},
-    get,
-    middleware::Logger,
-    web,
-    web::{resource, route, scope, Data, Query},
-    App, Either, HttpRequest, HttpResponse, HttpServer, Responder,
-};
+use actix_web::web::Path;
+use actix_web::{dev::{Service, ServiceResponse}, get, middleware::Logger, post, web, web::{resource, route, scope, Data, Query}, App, Either, HttpRequest, HttpResponse, HttpServer, Responder, middleware};
 use futures::FutureExt;
 use log::{error, info};
 use serde::{Deserialize, Serialize};
@@ -21,16 +14,15 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-#[derive(Serialize, Clone, Debug, Deserialize)]
+struct Rights {
+    admin: Arc<Mutex<bool>>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct Book {
     name: String,
     year: usize,
     id: usize,
-}
-
-#[derive(Clone, Debug)]
-struct Shelf {
-    contain: Vec<Book>,
 }
 
 #[derive(Deserialize)]
@@ -39,14 +31,9 @@ struct Admin {
     password: String,
 }
 
-#[derive(Deserialize)]
-struct User {
-    name: String,
-    password: String,
-}
-
-struct Rights {
-    admin: Arc<Mutex<bool>>,
+#[derive(Clone, Debug)]
+struct Shelf {
+    contain: Vec<Book>,
 }
 
 impl Shelf {
@@ -94,6 +81,14 @@ async fn book(data: Query<HashMap<String, String>>, shelf: Data<Mutex<Shelf>>) -
         .finish()
 }
 
+async fn admin_panel() -> impl Responder {
+    HttpResponse::Ok().body(include_str!("../templates/admin-panel.html"))
+}
+
+async fn handle_404() -> impl Responder {
+    HttpResponse::NotFound().body(include_str!("../templates/not-found.html"))
+}
+
 #[get("/")]
 async fn index() -> impl Responder {
     HttpResponse::Ok().body(include_str!("../templates/index.html"))
@@ -126,7 +121,7 @@ async fn no_rights() -> impl Responder {
     HttpResponse::Unauthorized().body(include_str!("../templates/no-rights.html"))
 }
 
-#[get("/p/{query_one}/{query_two}")]
+#[get("/p/{first_p}/{second_p}")]
 async fn take_file(path: Path<(String, String)>) -> Either<Vec<u8>, impl Responder> {
     let (qwe, zxc) = (&path.0, &path.1);
 
@@ -144,36 +139,9 @@ async fn take_file(path: Path<(String, String)>) -> Either<Vec<u8>, impl Respond
     }
 }
 
+#[post("/http-version")]
 async fn http(req: HttpRequest) -> impl Responder {
-    info!("HTTP version: {:?}", req.version());
-    HttpResponse::Ok().append_header(("Location", "/")).finish()
-}
-
-async fn settings() -> String {
-    "Settings".to_string()
-}
-
-async fn submit(data: Json<User>) -> impl Responder {
-    format!("Hello, {}!", data.name)
-}
-
-async fn admin_panel() -> impl Responder {
-    HttpResponse::Ok().body(include_str!("../templates/admin-panel.html"))
-}
-
-async fn get_html(data: web::Form<User>) -> impl Responder {
-    HttpResponse::Ok().body(format!(
-        "Submitted username: {} password: {}",
-        data.name, data.password
-    ))
-}
-
-async fn test_page() -> impl Responder {
-    HttpResponse::Ok().finish()
-}
-
-async fn handle_404() -> impl Responder {
-    HttpResponse::NotFound().body(include_str!("../templates/not-found.html"))
+    HttpResponse::Ok().body(format!("HTTP version: {:?}", req.version()))
 }
 
 #[actix_web::main]
@@ -194,12 +162,14 @@ async fn main() -> Result<()> {
         let tasks_clone = Data::clone(&tasks);
         App::new()
             .wrap(logger)
+            .wrap(middleware::NormalizePath::trim())
             .app_data(Data::new(rights_clone.clone()))
             .service(admin)
             .service(index)
             .service(login)
             .service(no_rights)
             .service(take_file)
+            .service(http)
             .service(
                 scope("/task")
                     .app_data(Data::clone(&tasks_clone))
@@ -207,7 +177,7 @@ async fn main() -> Result<()> {
                     .service(resource("/list").route(web::post().to(task::list)))
                     .service(resource("/remove").route(web::post().to(task::remove)))
                     .service(resource("/start").route(web::post().to(task::start)))
-                    .service(resource("/instruction").route(web::get().to(task::instruction)))
+                    .service(resource("/instruction").route(web::get().to(task::instruction))),
             )
             .service(
                 scope("/book")
@@ -245,7 +215,6 @@ async fn main() -> Result<()> {
                         }
                     })
                     .service(resource("").to(admin_panel))
-                    .service(resource("/settings").to(settings))
                     .service(Files::new("/dir", "./").show_files_listing()),
             )
             .service(scope("/shelf").route(
@@ -259,14 +228,10 @@ async fn main() -> Result<()> {
                     }
                 }),
             ))
-            .route("/http", web::get().to(http))
-            .route("/submit", web::post().to(submit))
-            .route("/html", web::post().to(get_html))
-            .route("/test_page", web::get().to(test_page))
             .default_service(route().to(handle_404))
     })
     .shutdown_timeout(10)
-    .bind(("127.0.0.1", 8080))?
+    .bind("127.0.0.1:8080")?
     .run()
     .await
 }
