@@ -6,7 +6,7 @@ use actix_web::{
     dev::{Service, ServiceResponse},
     get,
     middleware::Logger,
-    post, web,
+    web,
     web::{resource, route, scope, Data, Query},
     App, Either, HttpRequest, HttpResponse, HttpServer, Responder,
 };
@@ -153,7 +153,7 @@ async fn settings() -> String {
     "Settings".to_string()
 }
 
-async fn submit(data: web::Json<User>) -> impl Responder {
+async fn submit(data: Json<User>) -> impl Responder {
     format!("Hello, {}!", data.name)
 }
 
