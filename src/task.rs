@@ -5,7 +5,6 @@ use actix_web::{HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 
-
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Task {
     id: usize,
@@ -13,6 +12,7 @@ pub struct Task {
     name: String,
     data: String,
     solve_type: TaskType,
+    result: String,
     time: String
 }
 
@@ -22,7 +22,6 @@ pub struct TaskSetup {
     solve_type: TaskType,
     data: String,
 }
-
 
 #[derive(Deserialize)]
 pub struct TaskId {
@@ -44,7 +43,7 @@ impl Tasks {
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 enum TaskType {
-    Product
+    Product,
 }
 
 pub async fn create(tasks: Data<Mutex<Tasks>>, task: Json<TaskSetup>) -> impl Responder {
@@ -61,6 +60,7 @@ pub async fn create(tasks: Data<Mutex<Tasks>>, task: Json<TaskSetup>) -> impl Re
         name: new_task.name,
         data: new_task.data,
         solve_type: new_task.solve_type,
+        result: "No Result".to_string(),
         time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string()
     });
 
@@ -88,37 +88,21 @@ pub async fn start(tasks: Data<Mutex<Tasks>>, task: Json<TaskId>) -> impl Respon
     let tasks_lock = tasks.lock().unwrap();
     let mut tasks_list_lock = tasks_lock.list.lock().unwrap();
 
-
     return match tasks_list_lock[task.id].solve_type {
         TaskType::Product => {
             let result = solves::product(tasks_list_lock[task.id].data.as_str()).await;
             if result != 0 {
                 tasks_list_lock[task.id].status = "Ok".to_string();
-                HttpResponse::Ok().json(result)
+                tasks_list_lock[task.id].result = result.to_string();
+                HttpResponse::Ok().finish()
             } else {
                 tasks_list_lock[task.id].status = "Err".to_string();
                 HttpResponse::BadRequest().finish()
             }
         }
-    }
-
-
+    };
 }
 
-pub async fn finish_simulation(tasks: Data<Mutex<Tasks>>, task: Json<TaskId>) -> impl Responder {
-    let tasks_lock = tasks.lock().unwrap();
-    let mut tasks_list_lock = tasks_lock.list.lock().unwrap();
-
-    tasks_list_lock[task.id].status = "OK".to_string();
-
-    HttpResponse::Ok().finish()
-}
-
-pub async fn error_simulation(tasks: Data<Mutex<Tasks>>, task: Json<TaskId>) -> impl Responder {
-    let tasks_lock = tasks.lock().unwrap();
-    let mut tasks_list_lock = tasks_lock.list.lock().unwrap();
-
-    tasks_list_lock[task.id].status = "Err".to_string();
-
-    HttpResponse::Ok().finish()
+pub async fn instruction() -> impl Responder {
+    HttpResponse::Ok().body(include_str!("../templates/instruction.html"))
 }

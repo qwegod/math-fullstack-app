@@ -207,13 +207,7 @@ async fn main() -> Result<()> {
                     .service(resource("/list").route(web::post().to(task::list)))
                     .service(resource("/remove").route(web::post().to(task::remove)))
                     .service(resource("/start").route(web::post().to(task::start)))
-                    .service(
-                        resource("/finish_simulation")
-                            .route(web::post().to(task::finish_simulation)),
-                    )
-                    .service(
-                        resource("/error_simulation").route(web::post().to(task::error_simulation)),
-                    ),
+                    .service(resource("/instruction").route(web::get().to(task::instruction)))
             )
             .service(
                 scope("/book")
