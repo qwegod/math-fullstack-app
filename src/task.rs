@@ -13,7 +13,7 @@ pub struct Task {
     data: String,
     solve_type: TaskType,
     result: String,
-    time: String
+    time: String,
 }
 
 #[derive(Deserialize)]
@@ -61,7 +61,7 @@ pub async fn create(tasks: Data<Mutex<Tasks>>, task: Json<TaskSetup>) -> impl Re
         data: new_task.data,
         solve_type: new_task.solve_type,
         result: "No Result".to_string(),
-        time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string()
+        time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
     });
 
     HttpResponse::Ok().finish()
