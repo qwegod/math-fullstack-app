@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Instruction</title>
+</head>
+<body style="background-color: lightgrey">
+<h1 style="color: black; text-align: center"> Instruction </h1>
+        <pre style="color: black;">
+        1. To create a task, use post request at http://localhost:8080/task/create
+
+        Example input json file
+        {
+        "name": "product",
+        "data": "123 123 54 32 1 2 3 5",
+        "solve_type": "Product"
+        }
+
+
+        2. To see the list of tasks, use post request at http://localhost:8080/task/list
+
+        Example output json file
+        [
+            {
+                "id": 0,
+                "status": "Ok",
+                "name": "product",
+                "data": "123 123 54 32 1 2 3 5",
+                "solve_type": "Product",
+                "result": "784287360",
+                "time": "2024-03-09 16:18:36"
+            }
+        ]
+
+
+        3. To remove a task from the list, use post request at http://localhost:8080/task/remove
+
+        Example input json file
+        {
+        "id": 0
+        }
+
+
+        4. To run the task from the list, use post request at http://localhost:8080/task/start
+
+        Example input json file
+        {
+        "id": 0
+        }
+    </pre>
+</body>
+</html>
