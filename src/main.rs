@@ -1,8 +1,17 @@
 mod task;
 
 use actix_files::Files;
-use actix_web::web::Path;
-use actix_web::{dev::{Service, ServiceResponse}, get, middleware::Logger, post, web, web::{resource, route, scope, Data, Query}, App, Either, HttpRequest, HttpResponse, HttpServer, Responder, middleware};
+use actix_session::{storage::CookieSessionStore, Session, SessionExt, SessionMiddleware};
+use actix_web::{
+    cookie::Key,
+    dev::{Service, ServiceResponse},
+    get, middleware,
+    middleware::Logger,
+    post, web,
+    web::Path,
+    web::{resource, route, scope, Data, Query},
+    App, Either, HttpRequest, HttpResponse, HttpServer, Responder,
+};
 use futures::FutureExt;
 use log::{error, info};
 use serde::{Deserialize, Serialize};
@@ -95,9 +104,9 @@ async fn index() -> impl Responder {
 }
 
 #[get("/admin")]
-async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder {
-    *rights.admin.lock().unwrap() = true;
-    if format!("{}", admin.login) == "login" && format!("{}", admin.password) == "1111" {
+async fn admin(admin: Query<Admin>, session: Session) -> impl Responder {
+    if admin.login == "login" && admin.password == "1111" {
+        session.insert("authenticated", &true).unwrap();
         HttpResponse::Found()
             .append_header(("Location", "/admin-panel"))
             .finish()
@@ -163,6 +172,11 @@ async fn main() -> Result<()> {
         App::new()
             .wrap(logger)
             .wrap(middleware::NormalizePath::trim())
+            .wrap(
+                SessionMiddleware::builder(CookieSessionStore::default(), Key::from(&[0; 64]))
+                    .cookie_secure(false)
+                    .build(),
+            )
             .app_data(Data::new(rights_clone.clone()))
             .service(admin)
             .service(index)
@@ -203,7 +217,11 @@ async fn main() -> Result<()> {
             .service(
                 scope("/admin-panel")
                     .wrap_fn(move |req, srv| {
-                        if *rights_clone.admin.lock().unwrap() {
+                        if let Some(true) = req
+                            .get_session()
+                            .get::<bool>("authenticated")
+                            .unwrap_or(None)
+                        {
                             srv.call(req)
                         } else {
                             let res = HttpResponse::Found()
