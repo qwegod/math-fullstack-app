@@ -37,6 +37,16 @@ struct Admin {
     password: String,
 }
 
+#[derive(Deserialize)]
+struct User {
+    name: String,
+    password: String,
+}
+
+struct Rights {
+    admin: Arc<Mutex<bool>>,
+}
+
 impl Shelf {
     fn new() -> Self {
         info!("Shelf created");
@@ -53,19 +63,34 @@ impl Shelf {
     fn add(data: Query<HashMap<String, String>>, shelf: Data<Mutex<Shelf>>) {
         let mut shelf = shelf.lock().unwrap();
         let id = shelf.contain.len();
+        let year;
+        match data
+            .clone()
+            .into_inner()
+            .get("year")
+            .unwrap()
+            .parse::<usize>()
+        {
+            Ok(o) => year = o,
+            Err(e) => {
+                error!("{}", e);
+                return;
+            }
+        }
         shelf.contain.push(Book {
             id,
             name: data.clone().into_inner().get("name").unwrap().clone(),
-            year: data
-                .clone()
-                .into_inner()
-                .get("year")
-                .unwrap()
-                .parse::<usize>()
-                .unwrap(),
+            year,
         });
-        info!("ADD SHELF: {:?}", shelf);
     }
+}
+
+
+async fn book(data: Query<HashMap<String, String>>, shelf: Data<Mutex<Shelf>>) -> impl Responder {
+    Shelf::add(data, shelf);
+    HttpResponse::Found()
+        .append_header(("Location", "/"))
+        .finish()
 }
 
 #[get("/")]
@@ -73,13 +98,6 @@ async fn index() -> impl Responder {
     HttpResponse::Ok().body(include_str!("../templates/index.html"))
 }
 
-async fn book(data: Query<HashMap<String, String>>, shelf: Data<Mutex<Shelf>>) -> impl Responder {
-    Shelf::add(data, shelf);
-    info!("asdadasas");
-    HttpResponse::Found()
-        .append_header(("Location", "/"))
-        .finish()
-}
 
 #[get("/admin")]
 async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder {
@@ -91,6 +109,17 @@ async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder
     } else {
         error!("Incorrect login attempt");
         HttpResponse::Unauthorized().body("Incorrect login or password")
+    }
+}
+
+
+#[get("/login")]
+async fn login(rights: Data<Arc<Rights>>) -> impl Responder {
+    if *rights.admin.lock().unwrap() == true{
+        HttpResponse::Ok().body(include_str!("../templates/admin-panel.html"))
+    }
+    else {
+        HttpResponse::Ok().body(include_str!("../templates/login.html"))
     }
 }
 
@@ -126,15 +155,6 @@ async fn settings() -> String {
     "Settings".to_string()
 }
 
-#[derive(Deserialize)]
-struct User {
-    name: String,
-    password: String,
-}
-
-struct Rights {
-    admin: Arc<Mutex<bool>>,
-}
 
 async fn submit(data: web::Json<User>) -> impl Responder {
     format!("Hello, {}!", data.name)
@@ -178,6 +198,7 @@ async fn main() -> Result<()> {
             .app_data(Data::new(rights_clone.clone()))
             .service(admin)
             .service(index)
+            .service(login)
             .service(no_rights)
             .service(take_file)
             .service(
