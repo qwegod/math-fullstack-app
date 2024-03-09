@@ -1,4 +1,4 @@
-# Project: Actix Web Server
+# Actix Web Server
 
 Welcome to the repository for the "Actix Web Server" project. This project represents a server-side web application developed using the Actix Web framework in the Rust programming language.
 
