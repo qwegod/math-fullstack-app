@@ -1,10 +1,12 @@
+mod task;
+
 use actix_files::Files;
-use actix_web::web::Path;
+use actix_web::web::{Json, Path};
 use actix_web::{
     dev::{Service, ServiceResponse},
     get,
     middleware::Logger,
-    web,
+    post, web,
     web::{resource, route, scope, Data, Query},
     App, Either, HttpRequest, HttpResponse, HttpServer, Responder,
 };
@@ -85,7 +87,6 @@ impl Shelf {
     }
 }
 
-
 async fn book(data: Query<HashMap<String, String>>, shelf: Data<Mutex<Shelf>>) -> impl Responder {
     Shelf::add(data, shelf);
     HttpResponse::Found()
@@ -97,7 +98,6 @@ async fn book(data: Query<HashMap<String, String>>, shelf: Data<Mutex<Shelf>>) -
 async fn index() -> impl Responder {
     HttpResponse::Ok().body(include_str!("../templates/index.html"))
 }
-
 
 #[get("/admin")]
 async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder {
@@ -112,13 +112,11 @@ async fn admin(admin: Query<Admin>, rights: Data<Arc<Rights>>) -> impl Responder
     }
 }
 
-
 #[get("/login")]
 async fn login(rights: Data<Arc<Rights>>) -> impl Responder {
-    if *rights.admin.lock().unwrap() == true{
+    if *rights.admin.lock().unwrap() == true {
         HttpResponse::Ok().body(include_str!("../templates/admin-panel.html"))
-    }
-    else {
+    } else {
         HttpResponse::Ok().body(include_str!("../templates/login.html"))
     }
 }
@@ -155,7 +153,6 @@ async fn settings() -> String {
     "Settings".to_string()
 }
 
-
 async fn submit(data: web::Json<User>) -> impl Responder {
     format!("Hello, {}!", data.name)
 }
@@ -185,6 +182,7 @@ async fn main() -> Result<()> {
     env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
     let shelf = Data::new(Mutex::new(Shelf::new()));
+    let tasks = Data::new(Mutex::new(task::Tasks::new()));
     let rights = Arc::new(Rights {
         admin: Arc::new(Mutex::new(false)),
     });
@@ -193,6 +191,7 @@ async fn main() -> Result<()> {
         let logger = Logger::default();
         let shelf_service_clone = Data::clone(&shelf);
         let rights_clone = Arc::clone(&rights);
+        let tasks_clone = Data::clone(&tasks);
         App::new()
             .wrap(logger)
             .app_data(Data::new(rights_clone.clone()))
@@ -201,6 +200,21 @@ async fn main() -> Result<()> {
             .service(login)
             .service(no_rights)
             .service(take_file)
+            .service(
+                scope("/task")
+                    .app_data(Data::clone(&tasks_clone))
+                    .service(resource("/create").route(web::post().to(task::create)))
+                    .service(resource("/list").route(web::post().to(task::list)))
+                    .service(resource("/remove").route(web::post().to(task::remove)))
+                    .service(resource("/start").route(web::post().to(task::start)))
+                    .service(
+                        resource("/finish_simulation")
+                            .route(web::post().to(task::finish_simulation)),
+                    )
+                    .service(
+                        resource("/error_simulation").route(web::post().to(task::error_simulation)),
+                    ),
+            )
             .service(
                 scope("/book")
                     .app_data(Data::clone(&shelf_service_clone))
