@@ -2,28 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="http://localhost:8080/p/styles/style.css" rel="stylesheet"  type="text/css">
     <title>Main page</title>
 </head>
-<body style="background-color: lightgrey">
-    <h1 style="color: black; text-align: center"> Books </h1>
-    <img src="http://localhost:8080/p/image/book.png" width="100" height="100" alt="book">
+<body>
+    <div class="books">
+        <h1> BOOKS </h1>
+    </div>
+    <div class="book">
+        <img src="http://localhost:8080/p/image/book.png" width="200" height="150" alt="book">
+    </div>
     <br>
     <form action="http://localhost:8080/book/create/" method="GET">
-        <input type="text" name="name" placeholder="name" style="width: 92px">
-        <br>
-        <br>
-        <input type="text" name="year" placeholder="year" style="width: 92px">
-        <br>
-        <br>
-        <button type="submit" style="width: 100px; color: black; background-color: darkgrey">Add book</button>
+        <div class="position-input">
+            <input type="text" name="name" placeholder="name">
+            <br>
+            <br>
+            <input type="text" name="year" placeholder="year">
+            <br>
+            <br>
+        </div>
+        <div class="add-book-position-button">
+            <button type="submit">ADD</button>
+        </div>
     </form>
     <br>
-    <form action="http://localhost:8080/shelf/list" method="GET" target="_blank">
-        <button type="submit" style="width: 100px; color: black; background-color: darkgrey ">Show shelf</button>
-    </form>
-    <a href="http://localhost:8080/task/instruction" style="position: fixed; bottom: 0; right: 0; margin: 20px; color: black; top: 92%;"> instruction</a>
-    <a href="http://localhost:8080/login" style="position: fixed; bottom: 0; right: 0; margin: 20px; color: black; top: 95%;"> admin panel</a>
-
+    <div class="position-button-bottom">
+        <form action="http://localhost:8080/shelf/list" method="GET" target="_blank">
+            <button type="submit">SHOW</button>
+        </form>
+        <form action="http://localhost:8080/task/instruction" method="GET" target="_blank">
+            <button type="submit">instruction</button>
+        </form>
+        <form action="http://localhost:8080/login" method="GET" target="_blank">
+            <button type="submit">admin panel</button>
+        </form>
+    </div>
 
 
 </body>

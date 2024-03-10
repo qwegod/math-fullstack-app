@@ -1,0 +1,76 @@
+body {
+    background-color: darkcyan;
+}
+
+
+input {
+    width: 150px;
+    height: 30px;
+    font: small-caps bold 24px/1 sans-serif;
+    background-color: white;
+    color: gray;
+    border-radius: 20px;
+    border-color: white;
+    text-align: center;
+    font-size: 20px;
+}
+
+
+.position-input {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.add-book-position-button {
+    position: absolute;
+    top: 58%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.add-book-position-button button {
+    width: 75px;
+    height: 30px;
+    font: small-caps bold 24px/1 sans-serif;
+    background-color: white;
+    color: darkgrey;
+    border-radius: 10px;
+    border-color: darkgrey;
+    text-align: center;
+    font-size: 20px;
+}
+
+.books h1 {
+    font: small-caps bold 24px/1 sans-serif;
+    font-size: 100px;
+    text-align: center;
+    color: cadetblue;
+}
+
+.position-button-bottom {
+    position: absolute;
+    top: 93%;
+    left: 95%;
+    transform: translate(-50%, -50%);
+}
+
+.position-button-bottom button {
+    width: 80px;
+    height: 20px;
+    font: small-caps bold 24px/1 sans-serif;
+    background-color: white;
+    color: darkgrey;
+    border-radius: 5px;
+    border-color: darkgrey;
+    text-align: center;
+    font-size: 11px;
+}
+
+.book {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

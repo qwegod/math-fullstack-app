@@ -8,9 +8,8 @@ use actix_web::{
     get, middleware,
     middleware::Logger,
     post, web,
-    web::Path,
     web::{resource, route, scope, Data, Query},
-    App, Either, HttpRequest, HttpResponse, HttpServer, Responder,
+    App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 use futures::FutureExt;
 use log::{error, info};
@@ -131,19 +130,21 @@ async fn no_rights() -> impl Responder {
 }
 
 #[get("/p/{first_p}/{second_p}")]
-async fn take_file(path: Path<(String, String)>) -> Either<Vec<u8>, impl Responder> {
+async fn take_file(path: web::Path<(String, String)>) -> Result<HttpResponse> {
     let (qwe, zxc) = (&path.0, &path.1);
 
     match std::fs::File::open(format!("{}/{}", qwe, zxc)) {
         Ok(mut res) => {
             let mut contents = Vec::new();
             res.read_to_end(&mut contents)
-                .expect("Failed to read image file");
-            Either::Left(contents)
+                .expect("Failed to read file");
+
+            Ok(HttpResponse::Ok()
+                .body(contents))
         }
         Err(e) => {
             error!("{}", e);
-            Either::Right(HttpResponse::BadRequest().finish())
+            Ok(HttpResponse::BadRequest().finish())
         }
     }
 }
