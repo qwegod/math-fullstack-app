@@ -4,33 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="http://localhost:8080/p/styles/style.css" rel="stylesheet"  type="text/css">
-    <title>Main page</title>
+    <title>MathBot</title>
+    <script src="http://localhost:8080/p/scripts/input.js"></script>
+    <script src="http://localhost:8080/p/scripts/redirect.js"></script>
 </head>
 <body>
     <header>
         <div id="header_name">
-            HeaderName
+            MathBot
         </div>
     </header>
 
     <main>
-        <div id="content">
+        <div id="bot">
+            <img src="http://localhost:8080/p/image/bot.png" id="bot_icon">
+            <div id="bot_content">
+                <div id="bot_text"> Result:  </div>
+            </div>
+        </div>
+
+        <div id="input_user">
             <div id="form_expression">
-                <form>
+                
                     <div id="form_label"> 
                         <label> Enter the expression </label>
                     </div>
                     <div id="form_textbox"> 
-                        <input type="text" id="textbox" placeholder="x^2 + 4x + 3 = 0">
+                        <input type="text" id="textbox" placeholder="10x + 9 = 7x">
            
-                        <button type="submit" id="button"> Solve </button>
+                        <button onclick="calculate()" id="button"> Solve </button>
                     </div>
-                </form>
+               
             </div>
         </div>
     </main>
 
+    <aside>
+        <div id="functions">
+            <button onclick="switch_mode()" class="function" id="linear"> Linear equation </button>
+            <button class="function"> Quadratic equation </button>
+            <button class="function"> soon </button>
+            <button class="function"> soon </button>
+        </div>
+    </aside>
+
     <footer>
+        <div id="description">
+            soon
+        </div>
     </footer>
 </body>
 </html>
