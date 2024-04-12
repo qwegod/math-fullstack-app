@@ -10,4 +10,4 @@ Welcome to the repository for the "math-fullstack-app" project. This project rep
 - env_logger
 - serde
 - log
-- HTML, CSS
+- HTML, CSS, JS
