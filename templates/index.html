@@ -7,39 +7,30 @@
     <title>Main page</title>
 </head>
 <body>
-    <div class="books">
-        <h1> BOOKS </h1>
-    </div>
-    <div class="book">
-        <img src="http://localhost:8080/p/image/book.png" width="200" height="150" alt="book">
-    </div>
-    <br>
-    <form action="http://localhost:8080/book/create/" method="GET">
-        <div class="position-input">
-            <input type="text" name="name" placeholder="name">
-            <br>
-            <br>
-            <input type="text" name="year" placeholder="year">
-            <br>
-            <br>
+    <header>
+        <div id="header_name">
+            HeaderName
         </div>
-        <div class="add-book-position-button">
-            <button type="submit">ADD</button>
+    </header>
+
+    <main>
+        <div id="content">
+            <div id="form_expression">
+                <form>
+                    <div id="form_label"> 
+                        <label> Enter the expression </label>
+                    </div>
+                    <div id="form_textbox"> 
+                        <input type="text" id="textbox" placeholder="x^2 + 4x + 3 = 0">
+           
+                        <button type="submit" id="button"> Solve </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </form>
-    <br>
-    <div class="position-button-bottom">
-        <form action="http://localhost:8080/shelf/list" method="GET" target="_blank">
-            <button type="submit">SHOW</button>
-        </form>
-        <form action="http://localhost:8080/task/instruction" method="GET" target="_blank">
-            <button type="submit">instruction</button>
-        </form>
-        <form action="http://localhost:8080/login" method="GET" target="_blank">
-            <button type="submit">admin panel</button>
-        </form>
-    </div>
+    </main>
 
-
+    <footer>
+    </footer>
 </body>
 </html>
