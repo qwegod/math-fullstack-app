@@ -1,7 +1,6 @@
-function input() {
-    let element = document.getElementById("bot_text");
-    let input = document.getElementById("textbox").value;
+import { calculate } from './bot.js';
 
-    element.textContent = element.textContent + input;
-    document.getElementById("textbox").value = "";
+window.send_input = function() {
+    let element = document.getElementById("textbox");
+    calculate(element.value, element.name);
 }
