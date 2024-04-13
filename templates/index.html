@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="http://localhost:8080/p/styles/style.css" rel="stylesheet"  type="text/css">
     <title>MathBot</title>
-    <script src="http://localhost:8080/p/scripts/input.js"></script>
-    <script src="http://localhost:8080/p/scripts/redirect.js"></script>
+    <script src="http://localhost:8080/p/scripts/switch_mode.js"></script>
+    <script src="http://localhost:8080/p/dist/input.bundle.js"></script>
 </head>
+
+
 <body>
+
     <header>
         <div id="header_name">
             MathBot
@@ -23,16 +26,30 @@
             </div>
         </div>
 
+        <div id="user">
+            <img src="http://localhost:8080/p/image/user.png" id="user_icon">
+            <div id="user_content">
+                <div id="user_text"> Question:  </div>
+            </div>
+        </div>
+
         <div id="input_user">
             <div id="form_expression">
-                
                     <div id="form_label"> 
                         <label> Enter the expression </label>
                     </div>
-                    <div id="form_textbox"> 
-                        <input type="text" id="textbox" placeholder="10x + 9 = 7x">
+                    <div id="form_textbox">
+                        <input autocomplete="off" type="text" class="textbox" id="a" placeholder="A">
+                        <div class="constbox">X²</div>
+                        <div class="constbox">+</div>
+                        <input autocomplete="off" type="text" class="textbox" id="b" placeholder="B">
+                        <div class="constbox">X</div>
+                        <div class="constbox">+</div>
+                        <input autocomplete="off" type="text" class="textbox" id="c" placeholder="C">
+                        <div class="constbox">=</div>
+                        <div class="constbox">0</div>
            
-                        <button onclick="calculate()" id="button"> Solve </button>
+                        <button onclick="send_input()" id="button"> Solve </button>
                     </div>
                
             </div>
@@ -41,10 +58,9 @@
 
     <aside>
         <div id="functions">
-            <button onclick="switch_mode()" class="function" id="linear"> Linear equation </button>
-            <button class="function"> Quadratic equation </button>
-            <button class="function"> soon </button>
-            <button class="function"> soon </button>
+            <button onclick="switch_mode(1)" class="function"> Text </button>
+            <button onclick="switch_mode(2)" class="function"> Photo </button>
+            <button onclick="switch_mode(3)" class="function"> Paint </button>
         </div>
     </aside>
 

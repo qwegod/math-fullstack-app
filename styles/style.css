@@ -34,7 +34,7 @@ main {
 #input_user {
   text-align: center;
   position: fixed;
-  top: 85%;
+  top: 83%;
 }
 
 #form_expression {
@@ -55,7 +55,11 @@ main {
   border-color: darkgrey;
 }
 
-#textbox {
+.textbox {
+  display: inline-block;
+  align-content: center;
+  height: 30px;
+  width: 30px;
   background-color: white;
   color: black;
   border-radius: 20px;
@@ -63,11 +67,21 @@ main {
   text-align: center;
 }
 
+.constbox {
+  display: inline-block;
+  height: 25px;
+  width: 25px;
+  background-color: white;
+  color: black;
+  border: 2px darkgrey solid;
+  text-align: center;
+}
+
 
 #bot_content {
   position: fixed;
   left: 32%;
-  top: 70%;
+  top: 60%;
   background-color: #e7e0e0;
   width: 200px;
   height: 100px;
@@ -84,6 +98,31 @@ main {
 #bot_icon {
   position: fixed;
   left: 28%;
+  top: 60%;
+  width: 50px;
+  height: 50px;
+}
+
+#user_content {
+  position: fixed;
+  left: 58%;
+  top: 70%;
+  background-color: #e7e0e0;
+  width: 200px;
+  height: 100px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  border-top-left-radius: 15px;
+}
+
+#user_text {
+  margin-left: 10px;
+  margin-top: 10px;
+}
+
+#user_icon {
+  position: fixed;
+  left: 70%;
   top: 70%;
   width: 50px;
   height: 50px;
@@ -106,14 +145,13 @@ aside {
 }
 
 .function {
-  color: white;
-  font-size: 1.2em;
+  color: rgb(0, 0, 0);
+  font-size: 2.0em;
   text-align: center;
   align-content: center;
   margin: 50px;
-  border-radius: 15px;
-  border: 3px solid slategray;
-  background-color: #738dc3;
-  height: 50px;
-  width: 100px;
+  border: 2px solid rgb(214, 214, 214);
+  background-color: #e7e0e0;
+  height: 80px;
+  width: 200px;
 }
