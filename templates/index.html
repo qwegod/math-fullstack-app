@@ -16,9 +16,20 @@
         <div id="header_name">
             MathBot
         </div>
+        <div id="panel">
+            <img src="http://localhost:8080/p/image/profile.png" class="panel">
+            <img src="http://localhost:8080/p/image/more.png" class="panel">
+            <img src="http://localhost:8080/p/image/help.png" class="panel">
+        </div>
     </header>
 
     <main>
+        <div id="functions">
+            <button onclick="switch_mode(1)" class="function"> Text </button>
+            <button onclick="switch_mode(2)" class="function"> Photo </button>
+            <button onclick="switch_mode(3)" class="function"> Paint </button>
+        </div>
+
         <div id="bot">
             <img src="http://localhost:8080/p/image/bot.png" id="bot_icon">
             <div id="bot_content">
@@ -56,18 +67,5 @@
         </div>
     </main>
 
-    <aside>
-        <div id="functions">
-            <button onclick="switch_mode(1)" class="function"> Text </button>
-            <button onclick="switch_mode(2)" class="function"> Photo </button>
-            <button onclick="switch_mode(3)" class="function"> Paint </button>
-        </div>
-    </aside>
-
-    <footer>
-        <div id="description">
-            soon
-        </div>
-    </footer>
 </body>
 </html>
